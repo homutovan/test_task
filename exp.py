@@ -29,22 +29,10 @@ class EventHandler:
     def __init__(self, browser, tab):
         self.browser = browser
         self.tab = tab
-        #self.start_frame = None
         self.start = 0
         self.stop = 0
         self.all_metrics = []
         self.duration = []
-
-    # def frame_started_loading(self, frameId):
-    #     print('start')
-    #     # if not self.start_frame:
-    #     #     self.start_frame = frameId
-
-    # def frame_stopped_loading(self, frameId):
-    #     print('stop')
-    #     # if self.start_frame == frameId:
-    #     #     self.tab.Page.stopLoading()
-    #     #     print(self.browser.activate_tab(self.tab.id))
             
     def request(self, **kwargs):
         if not self.start:
@@ -76,29 +64,25 @@ class EventHandler:
             
         return self.all_metrics
             
-            
+def case1():
+    pass
     
-def main():
+def case2():
     browser = pychrome.Browser()
     tab = browser.new_tab()
     eh = EventHandler(browser, tab)
-    # tab.Page.frameStartedLoading = eh.frame_started_loading
-    # tab.Page.frameStoppedLoading = eh.frame_stopped_loading
     
-    #tab.Network.dataReceived = lambda **kwargs: print(kwargs)
-    
+    tab.Network.clearBrowserCache()
     tab.Network.requestWillBeSent = eh.request
     tab.Network.responseReceived = eh.response
-    
-    #tab.Page.loadEventFired = eh.load_event
     
     tab.start()
     
     tab.Network.enable()
     tab.Performance.enable()
+    tab.Page.enable()
     
     tab.Page.stopLoading()
-    tab.Page.enable()
     tab.Page.navigate(url = url)
     tab.wait(5)
     
@@ -111,9 +95,9 @@ def main():
     #pprint(eh.all_metrics)
     #eh.get_metrics()
     tab.stop()
-    print(eh.duration)
+    print(f'время открытия карточки документа {eh.duration[-1]}')
     #browser.close_tab(tab.id)
 
 if __name__ == '__main__':
-    main()
+    case2()
     
