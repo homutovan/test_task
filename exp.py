@@ -1,28 +1,14 @@
 import pychrome
 from pprint import pprint
 
-url = 'https://online.sbis.ru/auth/?ret=%252Fauth'
+url1 = 'http://tensor.ru'
+url2 = 'https://online.sbis.ru/auth/?ret=%252Fauth'
 
 target = [
             ('auth-MainTabs__buttonCaption', 2),
             ('demo-Auth__item documents', 0),
             ('edo3-Browser-Main__header1-text edo3-Browser__text-ellipsis', 0)
         ]
-
-# target = [
-#             ('auth-MainTabs__buttonCaption', 1),
-#             ('auth-MainTabs__buttonCaption', 2),
-#             ('auth-MainTabs__buttonCaption', 0),
-#             ('auth-MainTabs__buttonCaption', 1),
-#             ('auth-MainTabs__buttonCaption', 2),
-#             ('auth-MainTabs__buttonCaption', 0),
-#             ('auth-MainTabs__buttonCaption', 1),
-#             ('auth-MainTabs__buttonCaption', 2),
-#             ('auth-MainTabs__buttonCaption', 0),
-#             ('auth-MainTabs__buttonCaption', 1),
-#             ('auth-MainTabs__buttonCaption', 2),
-#             ('auth-MainTabs__buttonCaption', 0)
-#         ]
 
 class EventHandler:
 
@@ -60,44 +46,53 @@ class EventHandler:
         
     def get_metrics(self):
         for i, metric in enumerate(self.all_metrics):
-            metric = 0
-            
+            metric = 0        
         return self.all_metrics
-            
-def case1():
-    pass
-    
-def case2():
-    browser = pychrome.Browser()
-    tab = browser.new_tab()
-    eh = EventHandler(browser, tab)
-    
-    tab.Network.clearBrowserCache()
+ 
+def standard_procedure(decor_foo):
+    def wrapped(*args):
+        browser = pychrome.Browser()
+        tab = browser.new_tab()
+        eh = EventHandler(browser, tab)
+        
+        tab.start()
+        
+        tab.Network.enable()
+        tab.Performance.enable()
+        tab.Page.enable()
+        tab.Page.stopLoading()
+        tab.Network.clearBrowserCache()
+        
+        decor_foo(*args, tab, eh)
+        
+        tab.Page.disable()
+        tab.Network.disable()
+        tab.Performance.disable()
+        tab.stop()
+        browser.close_tab(tab.id)
+    return wrapped
+
+@standard_procedure 
+def case1(url, tab, eh):
+    tab.Page.navigate(url = url)
+    tab.wait(15)  
+    eh.add_metrics()
+    pprint(eh.get_metrics())
+
+@standard_procedure
+def case2(url, tab, eh):
     tab.Network.requestWillBeSent = eh.request
     tab.Network.responseReceived = eh.response
     
-    tab.start()
-    
-    tab.Network.enable()
-    tab.Performance.enable()
-    tab.Page.enable()
-    
-    tab.Page.stopLoading()
     tab.Page.navigate(url = url)
     tab.wait(5)
     
     for CSS_class, number in target:
-        print(CSS_class, number)
         eh.click(CSS_class, number)
-        #tab.Page.enable()
-        #eh.add_metrics()
-        #tab.Page.disable()
-    #pprint(eh.all_metrics)
-    #eh.get_metrics()
-    tab.stop()
-    print(f'время открытия карточки документа {eh.duration[-1]}')
-    #browser.close_tab(tab.id)
+        
+    print(f'Время открытия карточки документа: {eh.duration[-1]}')
 
 if __name__ == '__main__':
-    case2()
+    case1(url1)
+    case2(url2)
     
