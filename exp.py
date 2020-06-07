@@ -31,7 +31,7 @@ class EventHandler:
         if not self.duration:
             self.slice_duration()
         self.tab.Runtime.evaluate(expression = f'document.getElementsByClassName("{CSS_class}")[{number}].click()')
-        self.tab.wait(10)
+        self.tab.wait(20)
         self.slice_duration()
     
     def slice_duration(self):
